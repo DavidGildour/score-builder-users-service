@@ -10,7 +10,7 @@ if not 'FRONT_END' in os.environ:
     os.environ['FRONT_END'] = 'http://127.0.0.1:3000'
 
 app = Flask(__name__)
-cors = CORS(app, supports_credentials=True, origins='http://localhost:3000')
+cors = CORS(app, supports_credentials=True, origins=['http://localhost:3000', 'http://127.0.0.1:3000'])
 # cors = CORS(
 #     app,
 #     supports_credentials=True,
