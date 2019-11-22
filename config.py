@@ -8,6 +8,7 @@ class Config:
     TESTING = False
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     SECRET_KEY = os.urandom(16)
+    SESSION_TYPE = 'filesystem'
 
 
 class DevelopmentConfig(Config):

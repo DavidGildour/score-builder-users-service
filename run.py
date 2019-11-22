@@ -2,6 +2,7 @@ import os
 import sys
 
 from sqlalchemy import exc
+from flask_session import Session
 
 from app import app
 from db import db
@@ -24,6 +25,7 @@ def create_tables():
 
 if __name__ == '__main__':
     app.config.from_object('config.DevelopmentConfig')
+    Session(app)
     db.init_app(app)
 
 
