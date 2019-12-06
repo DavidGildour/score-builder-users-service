@@ -10,6 +10,7 @@ from models.user import UserModel
 from models.role import Role
 from utils import login_required
 
+
 class Me(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument('old_password')
@@ -37,7 +38,8 @@ class Me(Resource):
             user = UserModel.find_by_id(response['user_id'])
 
             if all((data['old_password'], data['password1'], data['password2'])):
-                if not check_password_hash(user.password, data['old_password']) or data['password1'] != data['password2']:
+                if not check_password_hash(user.password, data['old_password']) or\
+                   data['password1'] != data['password2']:
                     return {
                         'message': 'Passwords do not match.'
                     }, 401
@@ -68,6 +70,12 @@ class Me(Resource):
     def delete(cls):
         response = Me.get_id()
         if 'user_id' in response:
+            resp = requests.delete(f"{os.environ['SCORE_SERVICE']}/scores/{response['user_id']}")
+            if resp.status_code != 200:
+                return {
+                    'message': 'Couldn\'t delete the user scores, please, try again.'
+                }, resp.status_code
+
             user = UserModel.find_by_id(response['user_id'])
             user.delete_from_db()
             UserLogout.get()
@@ -106,6 +114,12 @@ class User(Resource):
             return {
                 'message': f'Admin privileges required.'
             }, 401
+
+        resp = requests.delete(f"{os.environ['SCORE_SERVICE']}/scores/{user_id}")
+        if resp.status_code != 200:
+            return {
+                'message': 'Couldn\'t delete the user scores, please, try again.'
+            }, resp.status_code
 
         user = UserModel.find_by_id(user_id)
 
@@ -179,10 +193,12 @@ class UserLogout(Resource):
     @classmethod
     @login_required
     def get(cls):
-        resp = requests.get(f'{os.environ["TOKEN_SERVICE"]}/blacklist',
-                     headers={
-                         'Authorization': f'Bearer {session["access_token"]}'
-                     })
+        resp = requests.get(
+            f'{os.environ["TOKEN_SERVICE"]}/blacklist',
+            headers={
+                'Authorization': f'Bearer {session["access_token"]}'
+            }
+        )
         if not resp.status_code == 200:
             return {
                 'message': 'Something went wrong, try again.'
